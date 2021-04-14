@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>950</width>
+    <width>933</width>
     <height>850</height>
    </rect>
   </property>
@@ -19,10 +19,86 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_4">
+    <item row="1" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="PlotWidget" name="graphWidget" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>800</width>
+          <height>200</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="2" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="PlotWidget" name="graphWidget2" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>800</width>
+          <height>200</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="1" rowspan="2">
+     <widget class="QWidget" name="verticalWidget" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item alignment="Qt::AlignHCenter">
+        <widget class="QLabel" name="spectroWidget">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <item>
+          <property name="text">
+           <string>Palette 1</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Palette 2</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Palette 3</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Palette 4</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Palette 5</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
     <item row="4" column="0" colspan="2">
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="2" alignment="Qt::AlignHCenter">
-       <widget class="QSlider" name="verticalSlider_3">
+      <item row="0" column="5" alignment="Qt::AlignHCenter">
+       <widget class="QSlider" name="verticalSlider_6">
         <property name="maximum">
          <number>5</number>
         </property>
@@ -40,74 +116,10 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1" alignment="Qt::AlignHCenter">
-       <widget class="QSlider" name="verticalSlider_2">
-        <property name="maximum">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="sliderPosition">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="4" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_5">
+      <item row="1" column="3" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_4">
         <property name="text">
          <string>1</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="6" alignment="Qt::AlignHCenter">
-       <widget class="QSlider" name="verticalSlider_7">
-        <property name="maximum">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="sliderPosition">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="7" alignment="Qt::AlignHCenter">
-       <widget class="QSlider" name="verticalSlider_8">
-        <property name="maximum">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="sliderPosition">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
         </property>
        </widget>
       </item>
@@ -118,110 +130,8 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0" alignment="Qt::AlignHCenter">
-       <widget class="QSlider" name="verticalSlider">
-        <property name="maximum">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="value">
-         <number>1</number>
-        </property>
-        <property name="sliderPosition">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="8" alignment="Qt::AlignHCenter">
-       <widget class="QSlider" name="verticalSlider_9">
-        <property name="maximum">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="sliderPosition">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="6" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="7" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_8">
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="9" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="5" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="9" alignment="Qt::AlignHCenter">
        <widget class="QSlider" name="verticalSlider_10">
-        <property name="maximum">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="sliderPosition">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="8" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="5" alignment="Qt::AlignHCenter">
-       <widget class="QSlider" name="verticalSlider_6">
         <property name="maximum">
          <number>5</number>
         </property>
@@ -258,8 +168,119 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="3" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_4">
+      <item row="1" column="9" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="8" alignment="Qt::AlignHCenter">
+       <widget class="QSlider" name="verticalSlider_9">
+        <property name="maximum">
+         <number>5</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="sliderPosition">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TicksAbove</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" alignment="Qt::AlignHCenter">
+       <widget class="QSlider" name="verticalSlider_2">
+        <property name="maximum">
+         <number>5</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="sliderPosition">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TicksAbove</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="6" alignment="Qt::AlignHCenter">
+       <widget class="QSlider" name="verticalSlider_7">
+        <property name="maximum">
+         <number>5</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="sliderPosition">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TicksAbove</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="7" alignment="Qt::AlignHCenter">
+       <widget class="QSlider" name="verticalSlider_8">
+        <property name="maximum">
+         <number>5</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="sliderPosition">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TicksAbove</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="5" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="8" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="7" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="4" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_3">
         <property name="text">
          <string>1</string>
         </property>
@@ -284,145 +305,69 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_11">
+      <item row="1" column="6" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>60Hz</string>
+         <string>1</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_12">
+      <item row="1" column="1" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>170Hz</string>
+         <string>1</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="2" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_13">
-        <property name="text">
-         <string>310Hz</string>
+      <item row="0" column="0" alignment="Qt::AlignHCenter">
+       <widget class="QSlider" name="verticalSlider">
+        <property name="maximum">
+         <number>5</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+        <property name="sliderPosition">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TicksAbove</enum>
         </property>
        </widget>
       </item>
-      <item row="2" column="3" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_14">
-        <property name="text">
-         <string>600Hz</string>
+      <item row="0" column="2" alignment="Qt::AlignHCenter">
+       <widget class="QSlider" name="verticalSlider_3">
+        <property name="maximum">
+         <number>5</number>
         </property>
-       </widget>
-      </item>
-      <item row="2" column="4" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_15">
-        <property name="text">
-         <string>1KHz</string>
+        <property name="pageStep">
+         <number>1</number>
         </property>
-       </widget>
-      </item>
-      <item row="2" column="5" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_16">
-        <property name="text">
-         <string>3KHz</string>
+        <property name="sliderPosition">
+         <number>1</number>
         </property>
-       </widget>
-      </item>
-      <item row="2" column="6" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_17">
-        <property name="text">
-         <string>6KHz</string>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
         </property>
-       </widget>
-      </item>
-      <item row="2" column="7" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_18">
-        <property name="text">
-         <string>12KHz</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="8" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_19">
-        <property name="text">
-         <string>14KHz</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="9" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_20">
-        <property name="text">
-         <string>16KHz</string>
+        <property name="tickPosition">
+         <enum>QSlider::TicksAbove</enum>
         </property>
        </widget>
       </item>
      </layout>
     </item>
     <item row="0" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="PlotWidget" name="graphWidget" native="true">
-        <property name="minimumSize">
-         <size>
-          <width>650</width>
-          <height>200</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="3" column="1">
-     <widget class="QComboBox" name="comboBox">
-      <item>
-       <property name="text">
-        <string>Palette 1</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Palette 2</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Palette 3</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Palette 4</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Palette 5</string>
-       </property>
-      </item>
+     <widget class="QCheckBox" name="checkBox">
+      <property name="text">
+       <string>show Spectrogram</string>
+      </property>
      </widget>
-    </item>
-    <item row="2" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <item>
-       <widget class="PlotWidget" name="graphWidget2" native="true">
-        <property name="minimumSize">
-         <size>
-          <width>650</width>
-          <height>200</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="0" column="1" rowspan="3">
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_21">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </item>
    </layout>
   </widget>
@@ -431,8 +376,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>950</width>
-     <height>22</height>
+     <width>933</width>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -485,14 +430,10 @@
    <addaction name="OpenSignalBtn"/>
    <addaction name="ZoomIn"/>
    <addaction name="ZoomOut"/>
-   <addaction name="Beginning"/>
    <addaction name="PlayBtn"/>
-   <addaction name="End"/>
-   <addaction name="Pause"/>
    <addaction name="Stop"/>
+   <addaction name="DrawSig"/>
    <addaction name="AddPanel"/>
-   <addaction name="DeletePanel"/>
-   <addaction name="spectrogram"/>
    <addaction name="PDF"/>
    <addaction name="LeftScroll"/>
    <addaction name="RightScroll"/>
@@ -566,25 +507,10 @@
     <string>Ctrl+-</string>
    </property>
   </action>
-  <action name="Beginning">
-   <property name="icon">
-    <iconset>
-     <normaloff>E:/apps/Task1/icons/backward.png</normaloff>E:/apps/Task1/icons/backward.png</iconset>
-   </property>
-   <property name="text">
-    <string>Beggining</string>
-   </property>
-   <property name="toolTip">
-    <string>Beggining</string>
-   </property>
-   <property name="shortcut">
-    <string>Home</string>
-   </property>
-  </action>
   <action name="PlayBtn">
    <property name="icon">
     <iconset>
-     <normaloff>E:/apps/Task1/icons/play-button.png</normaloff>E:/apps/Task1/icons/play-button.png</iconset>
+     <normaloff>icons/sound.png</normaloff>icons/sound.png</iconset>
    </property>
    <property name="text">
     <string>Play signal</string>
@@ -594,51 +520,6 @@
    </property>
    <property name="shortcut">
     <string>F5</string>
-   </property>
-  </action>
-  <action name="End">
-   <property name="icon">
-    <iconset>
-     <normaloff>E:/apps/Task1/icons/forward.png</normaloff>E:/apps/Task1/icons/forward.png</iconset>
-   </property>
-   <property name="text">
-    <string>End</string>
-   </property>
-   <property name="toolTip">
-    <string>End</string>
-   </property>
-   <property name="shortcut">
-    <string>End</string>
-   </property>
-  </action>
-  <action name="Pause">
-   <property name="icon">
-    <iconset>
-     <normaloff>E:/apps/Task1/icons/pause.png</normaloff>E:/apps/Task1/icons/pause.png</iconset>
-   </property>
-   <property name="text">
-    <string>Pause</string>
-   </property>
-   <property name="toolTip">
-    <string>Pause</string>
-   </property>
-   <property name="shortcut">
-    <string>F7</string>
-   </property>
-  </action>
-  <action name="spectrogram">
-   <property name="icon">
-    <iconset>
-     <normaloff>E:/apps/Task1/icons/Spectrogram.png</normaloff>E:/apps/Task1/icons/Spectrogram.png</iconset>
-   </property>
-   <property name="text">
-    <string>Spectrogram</string>
-   </property>
-   <property name="toolTip">
-    <string>Spectrogram</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+G</string>
    </property>
   </action>
   <action name="PDF">
@@ -690,18 +571,6 @@
    </property>
    <property name="toolTip">
     <string>Add Panel</string>
-   </property>
-  </action>
-  <action name="DeletePanel">
-   <property name="icon">
-    <iconset>
-     <normaloff>E:/apps/Task1/icons/delete.png</normaloff>E:/apps/Task1/icons/delete.png</iconset>
-   </property>
-   <property name="text">
-    <string>Delete Panel</string>
-   </property>
-   <property name="toolTip">
-    <string>Delete Panel</string>
    </property>
   </action>
   <action name="LeftScroll">
@@ -773,6 +642,26 @@
    </property>
    <property name="toolTip">
     <string>Stop</string>
+   </property>
+  </action>
+  <action name="QcheckBox">
+   <property name="text">
+    <string>hide</string>
+   </property>
+   <property name="toolTip">
+    <string>hide</string>
+   </property>
+  </action>
+  <action name="DrawSig">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/play-button.png</normaloff>icons/play-button.png</iconset>
+   </property>
+   <property name="text">
+    <string>Draw Signal</string>
+   </property>
+   <property name="toolTip">
+    <string>Draw Signal</string>
    </property>
   </action>
  </widget>

@@ -31,7 +31,6 @@ import pyqtgraph.exporters
 MAIN_WINDOW,_=loadUiType(path.join(path.dirname(__file__),"sigview.ui"))
 MAIN_WINDOW2,_=loadUiType(path.join(path.dirname(__file__),"fft2.ui"))
 
-
 class MainApp(QMainWindow,MAIN_WINDOW):
     
     def __init__(self,parent=None):
@@ -43,96 +42,107 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         global sliderArray
         sliderArray = []
         sliderArray=[self.verticalSlider,self.verticalSlider_2,self.verticalSlider_3,self.verticalSlider_4,self.verticalSlider_5,self.verticalSlider_6,self.verticalSlider_7,self.verticalSlider_8,self.verticalSlider_9,self.verticalSlider_10]
-        self.graphWidget.plotItem.showGrid(True, True, alpha=0.8)
-        self.graphWidget.plotItem.setTitle("Before Equalization")
-        self.graphWidget.setBackground('w')
+        self.graphWidgets=[self.graphWidget,self.graphWidget2]
+ 
+        # design graphWidgets
+        for i in range(2):
+            self.graphWidgets[i].plotItem.showGrid(True, True, alpha=0.8)
+            self.graphWidgets[0].plotItem.setTitle("Before Equalization")
+            self.graphWidgets[1].plotItem.setTitle("After Equalization")
+            self.graphWidgets[i].setBackground('w')
         
-        self.graphWidget2.plotItem.showGrid(True, True, alpha=0.8)
-        self.graphWidget2.plotItem.setTitle("After Equalization")
-        self.graphWidget2.setBackground('w')
-        self.comboBox.currentIndexChanged.connect(self.colorPallete)
+          # Add line to graph plot
+        self.vLine = pg.InfiniteLine(movable=True, angle=90, pen=[75, 82, 159, 200])
+        self.graphWidgets[0].addItem(self.vLine)
+        self.vLine.setPos(100)
 
-        # self.spectWidget.setBackground('#f2f2f2')
-        # self.spectWidget.getPlotItem().hideAxis('bottom')
-        # self.spectWidget.getPlotItem().hideAxis('left')
-        self.Toolbar()
+        self.comboBox.currentIndexChanged.connect(self.colorPallete)
+        self.checkBox.stateChanged.connect(self.showSpectro)
         self.Menubar()
+        self.Toolbar()
+        self.showSpectro()
         self.loopslider()
-       
-    #connecting menubar buttons to their functions
+        self.newWindows = []  
+        
     def Menubar(self):
         self.actionOpen_signal.triggered.connect(self.BrowseSignal)
         self.actionSave_signal_as.triggered.connect(self.saveFile)
         self.actionExit.triggered.connect(self.close)
-       
+
     def Toolbar(self):
         self.PlayBtn.triggered.connect(self.play_audio)
+        self.DrawSig.triggered.connect(self.speedTimer)
         self.OpenSignalBtn.triggered.connect(self.BrowseSignal)
+        self.AddPanel.triggered.connect(self.addNewWindow)
         self.Stop.triggered.connect(self.stop_audio)
         self.LeftScroll.triggered.connect(self.ScrollLeft) 
         self.RightScroll.triggered.connect(self.ScrollRight)
         self.ZoomIn.triggered.connect(self.zoomIn) 
-        self.ZoomOut.triggered.connect(self.zoomOut)
-        self.spectrogram.triggered.connect(self.spectro)
+        self.ZoomOut.triggered.connect(self.zoomOut) 
         self.PDF.triggered.connect(self.printPDF) 
-
+   
     def BrowseSignal(self):
         global fileName
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(None,"QFileDialog.getOpenFileName()", "","WAV Files (*.wav)")
         global sampling_rate, audio2 
         audio2, sampling_rate = librosa.load(fileName, sr=None, duration=20.0)
-        
         global l
         l=len(audio2)
         self.changeslidervalue()
         self.plotAudio(audio2,l)
-        self.graphWidget.plotItem.getViewBox().setLimits(xMin=0,xMax=l)
-        self.colorPallete()
+        self.graphWidgets[0].plotItem.getViewBox().setLimits(xMin=0,xMax=l)
+    
+    def stop_audio(self):
+        sd.stop()    
+    
+    def speedTimer(self):
+        for i in range(2):
+            self.graphWidgets[i].plotItem.getViewBox().scaleBy(x=0.1, y=1) #Increases the scale of X axis and Y axis
+        self.timer= QtCore.QTimer()
+        self.timer.setInterval(20) #delay interval for dynamic signal
+        self.timer.timeout.connect(self.DynamicSignal)
+        # self.timer.timeout.connect(self.DynamicSignal2)
+         #connect timer to our dynamic signal
+        self.timer.start()
 
-    def saveFile(self):
-        maximum = np.max(np.abs(adjusted_file))
-        print(type(maximum))
-        print('adjusted_file',type(adjusted_file))
-        data = (adjusted_file / maximum).astype(np.float32)
-        name="audiofile_output.wav"
-        # name=name.format(self.flag)
-        save = wavfile.write(name, int(sampling_rate), data)
-        plt.subplot(211)
-        plot(adjusted_file)
+    def DynamicSignal(self):
+        for i in range(2):
+           self.graphWidgets[i].plotItem.getViewBox().translateBy(x=l/100, y=0)
 
     def plotAudio(self,file,length):
-        self.graphWidget.plot(file[0:length],pen="b")
+        self.graphWidgets[0].plot(file[0:length],pen="b")
 
     def play_audio(self):
-        global wave_obj
-        wave_obj = sa.WaveObject.from_wave_file(fileName)
-        global play_obj
-        play_obj = wave_obj.play()
-
-    def stop_audio(self):
-        stop_obj = play_obj.stop()
+        sd.play(adjusted_file, sampling_rate)
+    
+    def addNewWindow(self):
+        window3=MainApp()
+        window3.show()
+        self.newWindows.append(window3)
         
     def zoomIn(self):
-        self.graphWidget2.plotItem.getViewBox().scaleBy(x=0.5, y=1) #Increases the scale of X axis and Y axis
-        self.graphWidget.plotItem.getViewBox().scaleBy(x=0.5, y=1) #Increases the scale of X axis and Y axis
+        for i in range(2):
+           self.graphWidgets[i].plotItem.getViewBox().scaleBy(x=0.5, y=1) #Increases the scale of X axis and Y axis
 
     def zoomOut(self):
-        self.graphWidget2.plotItem.getViewBox().scaleBy(x=2, y=1) #Decreases scale of X axis and Y axis 
-        self.graphWidget.plotItem.getViewBox().scaleBy(x=2, y=1) #Decreases scale of X axis and Y axis 
+        for i in range(2):
+           self.graphWidgets[i].plotItem.getViewBox().scaleBy(x=2, y=1) #Decreases scale of X axis and Y axis 
 
     def ScrollLeft(self):
-        self.graphWidget.plotItem.getViewBox().translateBy(x=-1000, y=0)
-        self.graphWidget2.plotItem.getViewBox().translateBy(x=-1000, y=0)
+        for i in range(2):
+           self.graphWidgets[i].plotItem.getViewBox().translateBy(x=-1000, y=0)
 
     def ScrollRight(self):
-        self.graphWidget.plotItem.getViewBox().translateBy(x=1000, y=0)
-        self.graphWidget2.plotItem.getViewBox().translateBy(x=1000, y=0)
+        for i in range(2):
+           self.graphWidgets[i].plotItem.getViewBox().translateBy(x=1000, y=0)
+
     def loopslider(self):
         global i
         i = 0
         while i < 10:
             sliderArray[i].valueChanged.connect(self.changeslidervalue)
             i += 1
+
     def changeslidervalue(self):
         global i
         i = 0
@@ -145,19 +155,14 @@ class MainApp(QMainWindow,MAIN_WINDOW):
 
     def audioRun(self,*gainArray):
         Rs = self.processAudio(audio2, sampling_rate, *gainArray)
-        # self.plot(Rs,sampling_rate)
 
     def processAudio(self, audio2, sampling_rate, gain1, gain2, gain3, gain4, gain5, gain6, gain7, gain8, gain9, gain10):
         n=l
         global yf
         yf = rfft(audio2)
         T=1/sampling_rate
-        # print (yf)
         xf = rfftfreq(n,T)
-        # global zf
-        # zf=np.abs(yf)
         global bandwidth
-        # bandwidth=int(sampling_rate/20)
         bandwidth1=np.where(xf==((sampling_rate)/20))
         bandwidth=bandwidth1[0][0]
         band1=yf[0:bandwidth]*gain1
@@ -172,31 +177,22 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         band10=yf[9*bandwidth:10*bandwidth]*gain10
         global new_yfft
         new_yfft=np.concatenate([band1,band2,band3,band4,band5,band6,band7,band8,band9,band10])
-        print("len of new_yfft 1 = ", len(new_yfft))
         new_yfft[len(new_yfft): len(yf)] = 0
-        print("len of new_yfft 2 = ", len(new_yfft))
         self.plotting(new_yfft)
-        
+        self.colorPallete()
+        self.play_audio()
         # ============================================================================
-    # def plot(self,signal, sample_rate):
+
     def plotting(self,new_yfft):
-        # s = irfft(yf)
         global adjusted_file
         adjusted_file = irfft(new_yfft)
-        self.graphWidget2.plotItem.clear()
-        self.graphWidget2.plot(adjusted_file[0:len(adjusted_file)],pen = "r")
-        # self.graphWidget2.plot(adjusted_file[0:len(adjusted_file)],pen="r")
-        self.graphWidget2.plotItem.getViewBox().setLimits(xMin=0,xMax=l)
+        self.graphWidgets[1].plotItem.clear()
+        self.graphWidgets[1].plot(adjusted_file,pen = "r")
+        self.graphWidgets[1].plotItem.getViewBox().setLimits(xMin=0,xMax=l)
         # pass
     
     def colorPallete(self):
-        index0=self.comboBox.findText("Palette 1",QtCore.Qt.MatchFixedString)
-        index1=self.comboBox.findText("Palette 2",QtCore.Qt.MatchFixedString)
-        # self.comboBox.setCurrentIndex(0)
-        # global colorMap
-        if self.comboBox.currentText()=='Palette 1':
-            # hist.gradient.restoreState( {'mode': 'rgb','ticks': [(0.5, (0, 182, 188, 255)),(1.0, (246, 111, 0, 255)),(0.0, (75, 0, 113, 255))]})
-            
+        if self.comboBox.currentText()=='Palette 1':           
             self.spectro('viridis')
         elif self.comboBox.currentText()=='Palette 2':
             self.spectro('plasma')
@@ -206,26 +202,23 @@ class MainApp(QMainWindow,MAIN_WINDOW):
             self.spectro('rainbow')
         else:
             self.spectro('GnBu')
+           
+    def showSpectro(self):
+        if self.checkBox.isChecked()==True:
+            self.verticalWidget.show()
+        else:
+            self.verticalWidget.hide()
 
-    # def spectro(self):
     def spectro(self,colorMap):
-
         fig = plt.figure()
         plt.subplot(111)
-        # global colorMap
-        # self.colorPallete()
-        self.powerSpectrum, self.freqenciesFound, self.time, self.imageAxis = plt.specgram(audio2, Fs=sampling_rate, cmap=colorMap)
-        # plt.xlabel('Time')
-        # plt.ylabel('Frequency')
+        self.spectrogram= plt.specgram(adjusted_file, Fs=sampling_rate, cmap=colorMap)
         fig.savefig('plot.png')
         self.upload()
             
     def upload(self):
-        self.label_21.setPixmap(QtGui.QPixmap("plot.png"))
-        self.label_21.setScaledContents(True)
-
-    def close(self):
-        QCoreApplication.instance().quit()
+        self.spectroWidget.setPixmap(QtGui.QPixmap("plot.png"))
+        self.spectroWidget.setScaledContents(True)
 
     def printPDF(self):
         pdf = FPDF()
@@ -234,14 +227,14 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         pdf.set_xy(0,0)
         
         pdf.cell(0, 10,ln=1,align='C')
-        exporter = pg.exporters.ImageExporter(self.graphWidget.plotItem)               
+        exporter = pg.exporters.ImageExporter(self.graphWidgets[0].plotItem)               
         exporter.parameters()['width'] = 250  
         exporter.parameters()['height'] = 250         
         exporter.export('fileName1.png')
         pdf.image('fileName1.png',x=None,y=None, w=180,h=70)
 
         pdf.cell(0, 10,ln=1,align='C')
-        exporter = pg.exporters.ImageExporter(self.graphWidget2.plotItem)               
+        exporter = pg.exporters.ImageExporter(self.graphWidgets[1].plotItem)               
         exporter.parameters()['width'] = 250  
         exporter.parameters()['height'] = 250         
         exporter.export('fileName2.png')
@@ -252,6 +245,17 @@ class MainApp(QMainWindow,MAIN_WINDOW):
 
         pdf.output('Report.pdf')
 
+    def saveFile(self):
+        maximum = np.max(np.abs(adjusted_file))
+        print(type(maximum))
+        print('adjusted_file',type(adjusted_file))
+        data = (adjusted_file / maximum).astype(np.float32)
+        name="audiofile_output.wav"
+        # name=name.format(self.flag)
+        save = wavfile.write(name, int(sampling_rate), data)
+        plt.subplot(211)
+        plot(adjusted_file)
+
 class MainApp2(QMainWindow,MAIN_WINDOW2):
     def __init__(self,parent=None):
         super(MainApp2,self).__init__(parent)
@@ -259,28 +263,20 @@ class MainApp2(QMainWindow,MAIN_WINDOW2):
         self.setupUi(self)
         
         self.pushButton.clicked.connect(self.fftt)
+        
     def fftt(self):
         
-        n=l # number of points
-        T=1/sampling_rate # sample spacing (spacing between points) = time step 
+        n=l
+        T=1/sampling_rate  
         global yf
         yf = rfft(audio2)
-        xf = rfftfreq(n,T) # sample freq
-        # print ( len (xf))
-        # print (len(np.abs(yf)))
+        xf = rfftfreq(n,T)
         
         self.fourWidget.plot(xf,np.abs(yf),pen = "b")
         print(len(new_yfft))
         print("len of yf",len(yf))
         print("len of xf",len(xf))
         self.fourWidget2.plot(xf[1:],np.abs(new_yfft)[ : len(xf)], pen='r')
-        # self.fourWidget2.plot(xf[ 0 : len(new_yfft)],np.abs(new_yfft), pen='r')
-        # self.fourWidget2.plot(xf,np.abs(new_yfft), pen='r')
-        # self.fourWidget2.plot(xf[ 0 : len(new_yfft)],np.abs(new_yfft), pen='r')
-        # self.fourWidget2.plot(xf[1:],np.abs(new_yfft), pen='r')
-        """ plt.xlable("Frequency -->")
-        plt.ylable("Magnitude") """
-        
         
 def main():
     app = QApplication(sys.argv)
