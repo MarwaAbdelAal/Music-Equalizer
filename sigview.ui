@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>838</width>
-    <height>705</height>
+    <width>797</width>
+    <height>713</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,6 +19,34 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_4">
+    <item row="0" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="PlotWidget" name="graphWidget" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>650</width>
+          <height>200</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="2" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="PlotWidget" name="graphWidget2" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>650</width>
+          <height>200</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
     <item row="3" column="0" colspan="2">
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="2" alignment="Qt::AlignHCenter">
@@ -373,30 +401,6 @@
       </item>
      </layout>
     </item>
-    <item row="0" column="0">
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="PlotWidget" name="graphWidget" native="true">
-        <property name="minimumSize">
-         <size>
-          <width>650</width>
-          <height>200</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="PlotWidget" name="graphWidget2" native="true">
-        <property name="minimumSize">
-         <size>
-          <width>650</width>
-          <height>200</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -404,7 +408,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>838</width>
+     <width>797</width>
      <height>22</height>
     </rect>
    </property>
@@ -477,7 +481,10 @@
   </action>
   <action name="actionSave_signal_as">
    <property name="text">
-    <string>Save signal as </string>
+    <string>Save signal</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionExit">
@@ -623,7 +630,7 @@
     <string>PDF</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+S</string>
+    <string>Ctrl+P</string>
    </property>
   </action>
   <action name="ClearSignal">

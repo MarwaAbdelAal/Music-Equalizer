@@ -12,54 +12,54 @@ import pandas as pd
 import numpy as np
 import sys
 import os
-from scipy.io.wavfile import read
+from scipy.io import wavfile
 from scipy import signal
-from scipy.io.wavfile import read
-from scipy.io.wavfile import write
 import wave
 from scipy.signal import firwin,freqz
 import simpleaudio as sa
-from scipy.fft import rfft, rfftfreq
+from scipy.fft import rfft, rfftfreq, fft, fftfreq, ifft, irfft
 from matplotlib import pyplot as plt
 import librosa
-import librosa.display
 from scipy.signal import butter, lfilter
 import sounddevice as sd
+import math
 
 MAIN_WINDOW,_=loadUiType(path.join(path.dirname(__file__),"sigview.ui"))
 MAIN_WINDOW2,_=loadUiType(path.join(path.dirname(__file__),"fft2.ui"))
 
-class MainApp(QMainWindow,MAIN_WINDOW):
 
+
+
+class MainApp(QMainWindow,MAIN_WINDOW):
+    
     def __init__(self,parent=None):
         super(MainApp,self).__init__(parent)
         QMainWindow.__init__(self)
         self.setupUi(self)
-
-        global gainArray
+        # global gainArray
+        # self.Toolbar()
         global sliderArray
-
         sliderArray = []
         sliderArray=[self.verticalSlider,self.verticalSlider_2,self.verticalSlider_3,self.verticalSlider_4,self.verticalSlider_5,self.verticalSlider_6,self.verticalSlider_7,self.verticalSlider_8,self.verticalSlider_9,self.verticalSlider_10]
-        
         self.graphWidget.plotItem.showGrid(True, True, alpha=0.8)
         self.graphWidget.plotItem.setTitle("Before Equalization")
         self.graphWidget.setBackground('w')
-        self.graphWidget.setLabel('bottom', "Time")
-        self.graphWidget.setLabel('left', "Amplitude")
         
         self.graphWidget2.plotItem.showGrid(True, True, alpha=0.8)
         self.graphWidget2.plotItem.setTitle("After Equalization")
-        self.graphWidget2.setLabel('bottom', "Time")
-        self.graphWidget2.setLabel('left', "Amplitude")
         self.graphWidget2.setBackground('w')
-        
         self.spectWidget.setBackground('#f2f2f2')
         self.spectWidget.getPlotItem().hideAxis('bottom')
         self.spectWidget.getPlotItem().hideAxis('left')
         self.Toolbar()
+        self.Menubar()
         self.loopslider()
-
+       
+    #connecting menubar buttons to their functions
+    def Menubar(self):
+        self.actionOpen_signal.triggered.connect(self.BrowseSignal)
+        self.actionSave_signal_as.triggered.connect(self.saveFile)
+       
     def Toolbar(self):
         self.PlayBtn.triggered.connect(self.play_audio)
         self.OpenSignalBtn.triggered.connect(self.BrowseSignal)
@@ -68,30 +68,30 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         self.RightScroll.triggered.connect(self.ScrollRight)
         self.ZoomIn.triggered.connect(self.zoomIn) 
         self.ZoomOut.triggered.connect(self.zoomOut)
-        self.spectrogram.triggered.connect(self.plot_spectrogram) 
-
-    def show2(self):
-        self.window2=QtWidgets.QMainWindow()
-        self.ui=MainApp2()
-        self.ui.setupUi(self.window2)
-        self.window2.show()
+        self.spectrogram.triggered.connect(self.spectro) 
 
     def BrowseSignal(self):
         global fileName
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(None,"QFileDialog.getOpenFileName()", "","WAV Files (*.wav)")
-        
         global sampling_rate, audio2 
         audio2, sampling_rate = librosa.load(fileName, sr=None, duration=20.0)
         
-        global lenght
-        lenght=len(audio2)
-        self.play_audio()
+        global l
+        l=len(audio2)
         self.changeslidervalue()
-        self.plotAudio(audio2,lenght)
-        self.graphWidget.plotItem.getViewBox().setLimits(xMin=0,xMax=lenght)
-        
-        print(audio2)
-        print(len(audio2))
+        self.plotAudio(audio2,l)
+        self.graphWidget.plotItem.getViewBox().setLimits(xMin=0,xMax=l)
+    
+    def saveFile(self):
+        maximum = np.max(np.abs(adjusted_file))
+        print(type(maximum))
+        print('adjusted_file',type(adjusted_file))
+        data = (adjusted_file / maximum).astype(np.float32)
+        name="audiofile_output.wav"
+        # name=name.format(self.flag)
+        save = wavfile.write(name, int(sampling_rate), data)
+        plt.subplot(211)
+        plot(adjusted_file)
 
     def plotAudio(self,file,length):
         self.graphWidget.plot(file[0:length],pen="b")
@@ -101,11 +101,10 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         wave_obj = sa.WaveObject.from_wave_file(fileName)
         global play_obj
         play_obj = wave_obj.play()
-        # play_obj.wait_done()  # Wait until sound has finished playing 
 
     def stop_audio(self):
         stop_obj = play_obj.stop()
-
+        
     def zoomIn(self):
         self.graphWidget2.plotItem.getViewBox().scaleBy(x=0.5, y=1) #Increases the scale of X axis and Y axis
         self.graphWidget.plotItem.getViewBox().scaleBy(x=0.5, y=1) #Increases the scale of X axis and Y axis
@@ -121,14 +120,12 @@ class MainApp(QMainWindow,MAIN_WINDOW):
     def ScrollRight(self):
         self.graphWidget.plotItem.getViewBox().translateBy(x=1000, y=0)
         self.graphWidget2.plotItem.getViewBox().translateBy(x=1000, y=0)
-
     def loopslider(self):
-            global i
-            i = 0
-            while i < 10:
-                sliderArray[i].valueChanged.connect(self.changeslidervalue)
-                i += 1
-
+        global i
+        i = 0
+        while i < 10:
+            sliderArray[i].valueChanged.connect(self.changeslidervalue)
+            i += 1
     def changeslidervalue(self):
         global i
         i = 0
@@ -136,83 +133,88 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         while i < 10:
             gainArray.append(sliderArray[i].value())
             i += 1
-        print(gainArray)
         self.audioRun(*gainArray)
         return gainArray
-            # self.audioRun(self.flag,*gainArray)
-            # return gainArray
 
     def audioRun(self,*gainArray):
         Rs = self.processAudio(audio2, sampling_rate, *gainArray)
-        self.plot(Rs,sampling_rate)
-        return Rs
+        # self.plot(Rs,sampling_rate)
+
+    # def processAudio(self, audio2, sampling_rate, gain1, gain2, gain3, gain4, gain5, gain6, gain7, gain8, gain9, gain10):
+    #     global yf
+    #     yf = rfft(audio2)
+    #     global bandwidth
+    #     xf = rfftfreq(n,T)
+    #     bandwidth1=np.where(xf==((sampling_rate)/20))
+    #     bandwidth=bandwidth1[0][0]
+    #     # bandwidth=int(sampling_rate/20)
+    #     # bandwidth =int(len(yf)/10)
+    #     band1=np.abs(yf)[0:bandwidth]*gain1
+    #     band2=np.abs(yf)[bandwidth:2*bandwidth]*gain2
+    #     band3=np.abs(yf)[2*bandwidth:3*bandwidth]*gain3
+    #     band4=np.abs(yf)[3*bandwidth:4*bandwidth]*gain4
+    #     band5=np.abs(yf)[4*bandwidth:5*bandwidth]*gain5
+    #     band6=np.abs(yf)[5*bandwidth:6*bandwidth]*gain6
+    #     band7=np.abs(yf)[6*bandwidth:7*bandwidth]*gain7
+    #     band8=np.abs(yf)[7*bandwidth:8*bandwidth]*gain8
+    #     band9=np.abs(yf)[8*bandwidth:9*bandwidth]*gain9
+    #     band10=np.abs(yf)[9*bandwidth:10*bandwidth]*gain10
+    #     global new_yfft
+    #     new_yfft=np.concatenate([band1,band2,band3,band4,band5,band6,band7,band8,band9,band10])
+    #     print("len of new_yfft 1 = ", len(new_yfft))
+    #     # new_yfft[len(new_yfft): len(yf)] = 0
+    #     # print("len of new_yfft 2 = ", len(new_yfft))
+    #     self.plotting()
+    #     self.spectro()
 
     def processAudio(self, audio2, sampling_rate, gain1, gain2, gain3, gain4, gain5, gain6, gain7, gain8, gain9, gain10):
-        freq = np.arange(sampling_rate * 0.5)
-        global size
-        size = len(freq) / 10
-        band1 = self.bandpass_filter(audio2, freq[21], freq[int(size)], sampling_rate, order=4) *10** (gain1)
-        band2 = self.bandpass_filter(audio2, freq[int(size)], freq[2 * int(size)], sampling_rate, order=4) *10** (gain2)
-        band3 = self.bandpass_filter(audio2, freq[2 * int(size)], freq[3 * int(size)], sampling_rate, order=4) *10** (gain3)
-        band4 = self.bandpass_filter(audio2, freq[3 * int(size)], freq[4 * int(size)], sampling_rate, order=4) *10**  (gain4)
-        band5 = self.bandpass_filter(audio2, freq[4 * int(size)], freq[5 * int(size)], sampling_rate, order=4) *10**  (gain5)
-        band6 = self.bandpass_filter(audio2, freq[5 * int(size)], freq[6 * int(size)], sampling_rate, order=4) *10**  (gain6)
-        band7 = self.bandpass_filter(audio2, freq[6 * int(size)], freq[7 * int(size)], sampling_rate, order=4) *10**  (gain7)
-        band8 = self.bandpass_filter(audio2, freq[7 * int(size)], freq[8 * int(size)], sampling_rate, order=4) *10**  (gain8)
-        band9 = self.bandpass_filter(audio2, freq[8 * int(size)], freq[9 * int(size)], sampling_rate, order=4) *10**  (gain9)
-        band10 = self.bandpass_filter(audio2, freq[9 * int(size)], freq[-1], sampling_rate, order=3) *10** (gain10)
-        osignal = band1 + band2 + band3 + band4 + band5 + band6 + band7 + band8 + band9 + band10
-        return osignal
-        # ============================================================================
-
-    def bandpass_filter(self, audio2nyquistfreq, lowcut, highcut, sampling_rate, order=5):
-        nyquistfreq = 0.5 * sampling_rate
-        low = lowcut / nyquistfreq
-        high = highcut / nyquistfreq
-        b, a = butter(order, [low, high], btype='band', analog=False)
-        filtered = lfilter(b, a, audio2)
-        return filtered
-
-    def plot(self,signal, sample_rate):
-        global i
-        i=2
-       
-        audio2fftafter = rfft(signal)
-        global fftabsafter
-        fftabsafter = abs(audio2fftafter)
-        global freqsa
-        freqsa = rfftfreq(len(audio2fftafter), 1 / sample_rate)
-        # self.UI.pcArray[3].plot(freqsa[:int(freqsa.size / 2)], fftabsafter[:int(freqsa.size / 2)], pen='r')
-        N1 = len(signal)
-        T1 = int(N1 / sample_rate)
-        self.graphWidget2.plot(signal[:T1 * sample_rate], pen='r')
-        self.graphWidget2.plotItem.getViewBox().setLimits(xMin=0,xMax=lenght)
-        sd.play(signal, sample_rate)
-    
-    
-    ## Visualizing the spectrogram
-    def plot_spectrogram(self):
-        ## Extracting Short-Time Fourier Transform
-
-        X = librosa.stft(audio2)
-        Xdb = librosa.amplitude_to_db(abs(X))
-        # plt.figure(figsize=(14, 5))
-        librosa.display.specshow(Xdb, sr=sampling_rate, x_axis='time', y_axis='hz')
-        plt.colorbar(format="%+2.f")
-        plt.show()
-
-
-    def spectro(self):
-        # self.spectWidgets[MainApp.currentSelected -1] = myPlotWidget(self.centralwidget, id = ((MainApp.currentSelected)+ 3 ))
+        n=l
+        global yf
+        yf = rfft(audio2)
+        T=1/sampling_rate
+        # print (yf)
+        xf = rfftfreq(n,T)
+        # global zf
+        # zf=np.abs(yf)
+        global bandwidth
+        # bandwidth=int(sampling_rate/20)
+        bandwidth1=np.where(xf==((sampling_rate)/20))
+        bandwidth=int(bandwidth1[0][0])
+        band1=np.abs(yf)[0:bandwidth]*gain1
+        band2=np.abs(yf)[bandwidth:2*bandwidth]*gain2
+        band3=np.abs(yf)[2*bandwidth:3*bandwidth]*gain3
+        band4=np.abs(yf)[3*bandwidth:4*bandwidth]*gain4
+        band5=np.abs(yf)[4*bandwidth:5*bandwidth]*gain5
+        band6=np.abs(yf)[5*bandwidth:6*bandwidth]*gain6
+        band7=np.abs(yf)[6*bandwidth:7*bandwidth]*gain7
+        band8=np.abs(yf)[7*bandwidth:8*bandwidth]*gain8
+        band9=np.abs(yf)[8*bandwidth:9*bandwidth]*gain9
+        band10=np.abs(yf)[9*bandwidth:10*bandwidth]*gain10
+        global new_yfft
+        new_yfft=np.concatenate([band1,band2,band3,band4,band5,band6,band7,band8,band9,band10])
+        print("len of new_yfft 1 = ", len(new_yfft))
+        new_yfft[len(new_yfft): len(yf)] = 0
+        print("len of new_yfft 2 = ", len(new_yfft))
+        # self.plotting(new_yfft)
+        self.plotting()
+        self.spectro(new_yfft)
         
-        # self.verticalLayout_2.addWidget(self.spectWidgets[MainApp.currentSelected -1])
-
-        # self.spectWidgets[MainApp.numOfGraphs -1].setEnabled(True)
-        # win = self.spectWidgets[MainApp.currentSelected -1 ]
-        # self.spectWidgetConfiguration(win)
+        # ============================================================================
+    # def plot(self,signal, sample_rate):
+    def plotting(self):
+        # s = irfft(yf)
+        global adjusted_file
+        adjusted_file = irfft(new_yfft)
+        self.graphWidget2.plotItem.clear()
+        # self.graphWidget2.plot(s[0:len(s)],pen = "r")
+        self.graphWidget2.plot(adjusted_file[0:len(adjusted_file)],pen="r")
+        self.graphWidget2.plotItem.getViewBox().setLimits(xMin=0,xMax=l)
+        # pass
+    
+    def spectro(self, draw):
         pg.setConfigOptions(imageAxisOrder='row-major')
         # the function that plot spectrogram of the selected signal
-        frequency, time, Sxx = signal.spectrogram(audio2,10)
+        f, t, Sxx = signal.spectrogram(draw,10)
 
         # Item for displaying image audio2
         img = pg.ImageItem()
@@ -231,12 +233,9 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         # Sxx contains the amplitude for each pixel
         img.setImage(Sxx)
         # Scale the X and Y Axis to time and frequency (standard is pixels)
-        img.scale(time[-1]/np.size(Sxx, axis=1),frequency[-1]/np.size(Sxx, axis=0))
+        img.scale(t[-1]/np.size(Sxx, axis=1),f[-1]/np.size(Sxx, axis=0))
         # Limit panning/zooming
-        self.spectWidget.setLimits(xMin=time[0], xMax=time[-1], yMin=frequency[0], yMax=frequency[-1])
-        self.spectWidget.setLabel('bottom', "Time")
-        self.spectWidget.setLabel('left', "Frequency")
-        self.spectWidget.plotItem.setTitle("Spectrogram")    
+        self.spectWidget.setLimits(xMin=t[0], xMax=t[-1], yMin=f[0], yMax=f[-1])
 
 class MainApp2(QMainWindow,MAIN_WINDOW2):
     def __init__(self,parent=None):
@@ -244,26 +243,25 @@ class MainApp2(QMainWindow,MAIN_WINDOW2):
         QMainWindow.__init__(self)
         self.setupUi(self)
         
-        # self.fftt()
         self.pushButton.clicked.connect(self.fftt)
-
     def fftt(self):
-        # global fileName
-        # fileName, _ = QtWidgets.QFileDialog.getOpenFileName(None,"QFileDialog.getOpenFileName()", "","WAV Files (*.wav)")
-        n=lenght
-        T=1/sampling_rate
-        yf = rfft(audio2)
-        xf = rfftfreq(n,T)
-        zf=np.abs(yf)
-        self.fourWidget.plot(xf,zf,pen = "b")
-        self.fourWidget2.plot(freqsa[:int(freqsa.size / 2)], fftabsafter[:int(freqsa.size / 2)], pen='r')
-        # plt.plot(xf, np.abs(yf))
-        # plt.grid()
-        """ plt.xlable("Frequency -->")
-        plt.ylable("Magnitude") """
-        # plt.show()
-        print("fftt")
         
+        n=l # number of points
+        T=1/sampling_rate # sample spacing (spacing between points) = time step 
+        global yf
+        yf = rfft(audio2)
+        xf = rfftfreq(n,T) # sample freq
+        # print ( len (xf))
+        # print (len(np.abs(yf)))
+        self.fourWidget.plot(xf,np.abs(yf),pen = "b")
+        # print(len(new_yfft))
+        print("len of yf",len(yf))
+        print("len of xf",len(xf))
+        # self.fourWidget2.plot(xf,np.abs(new_yfft)[0 : len(xf)], pen='r')
+        self.fourWidget2.plot(xf[ 0 : len(new_yfft)],np.abs(new_yfft), pen='r')
+        # self.fourWidget2.plot(xf,np.abs(new_yfft), pen='r')
+        # self.fourWidget2.plot(xf[ 0 : len(new_yfft)],np.abs(new_yfft), pen='r')
+        # self.fourWidget2.plot(xf[1:],np.abs(new_yfft), pen='r')
         
 def main():
     app = QApplication(sys.argv)
