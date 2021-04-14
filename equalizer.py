@@ -23,11 +23,11 @@ import librosa
 from scipy.signal import butter, lfilter
 import sounddevice as sd
 import math
+from matplotlib import cm
+from matplotlib.colors import ListedColormap,LinearSegmentedColormap
 
 MAIN_WINDOW,_=loadUiType(path.join(path.dirname(__file__),"sigview.ui"))
 MAIN_WINDOW2,_=loadUiType(path.join(path.dirname(__file__),"fft2.ui"))
-
-
 
 
 class MainApp(QMainWindow,MAIN_WINDOW):
@@ -36,7 +36,7 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         super(MainApp,self).__init__(parent)
         QMainWindow.__init__(self)
         self.setupUi(self)
-        # global gainArray
+        global gainArray
         # self.Toolbar()
         global sliderArray
         sliderArray = []
@@ -48,9 +48,11 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         self.graphWidget2.plotItem.showGrid(True, True, alpha=0.8)
         self.graphWidget2.plotItem.setTitle("After Equalization")
         self.graphWidget2.setBackground('w')
-        self.spectWidget.setBackground('#f2f2f2')
-        self.spectWidget.getPlotItem().hideAxis('bottom')
-        self.spectWidget.getPlotItem().hideAxis('left')
+        self.comboBox.currentIndexChanged.connect(self.colorPallete)
+
+        # self.spectWidget.setBackground('#f2f2f2')
+        # self.spectWidget.getPlotItem().hideAxis('bottom')
+        # self.spectWidget.getPlotItem().hideAxis('left')
         self.Toolbar()
         self.Menubar()
         self.loopslider()
@@ -81,7 +83,8 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         self.changeslidervalue()
         self.plotAudio(audio2,l)
         self.graphWidget.plotItem.getViewBox().setLimits(xMin=0,xMax=l)
-    
+        self.colorPallete()
+
     def saveFile(self):
         maximum = np.max(np.abs(adjusted_file))
         print(type(maximum))
@@ -140,33 +143,6 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         Rs = self.processAudio(audio2, sampling_rate, *gainArray)
         # self.plot(Rs,sampling_rate)
 
-    # def processAudio(self, audio2, sampling_rate, gain1, gain2, gain3, gain4, gain5, gain6, gain7, gain8, gain9, gain10):
-    #     global yf
-    #     yf = rfft(audio2)
-    #     global bandwidth
-    #     xf = rfftfreq(n,T)
-    #     bandwidth1=np.where(xf==((sampling_rate)/20))
-    #     bandwidth=bandwidth1[0][0]
-    #     # bandwidth=int(sampling_rate/20)
-    #     # bandwidth =int(len(yf)/10)
-    #     band1=np.abs(yf)[0:bandwidth]*gain1
-    #     band2=np.abs(yf)[bandwidth:2*bandwidth]*gain2
-    #     band3=np.abs(yf)[2*bandwidth:3*bandwidth]*gain3
-    #     band4=np.abs(yf)[3*bandwidth:4*bandwidth]*gain4
-    #     band5=np.abs(yf)[4*bandwidth:5*bandwidth]*gain5
-    #     band6=np.abs(yf)[5*bandwidth:6*bandwidth]*gain6
-    #     band7=np.abs(yf)[6*bandwidth:7*bandwidth]*gain7
-    #     band8=np.abs(yf)[7*bandwidth:8*bandwidth]*gain8
-    #     band9=np.abs(yf)[8*bandwidth:9*bandwidth]*gain9
-    #     band10=np.abs(yf)[9*bandwidth:10*bandwidth]*gain10
-    #     global new_yfft
-    #     new_yfft=np.concatenate([band1,band2,band3,band4,band5,band6,band7,band8,band9,band10])
-    #     print("len of new_yfft 1 = ", len(new_yfft))
-    #     # new_yfft[len(new_yfft): len(yf)] = 0
-    #     # print("len of new_yfft 2 = ", len(new_yfft))
-    #     self.plotting()
-    #     self.spectro()
-
     def processAudio(self, audio2, sampling_rate, gain1, gain2, gain3, gain4, gain5, gain6, gain7, gain8, gain9, gain10):
         n=l
         global yf
@@ -179,63 +155,72 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         global bandwidth
         # bandwidth=int(sampling_rate/20)
         bandwidth1=np.where(xf==((sampling_rate)/20))
-        bandwidth=int(bandwidth1[0][0])
-        band1=np.abs(yf)[0:bandwidth]*gain1
-        band2=np.abs(yf)[bandwidth:2*bandwidth]*gain2
-        band3=np.abs(yf)[2*bandwidth:3*bandwidth]*gain3
-        band4=np.abs(yf)[3*bandwidth:4*bandwidth]*gain4
-        band5=np.abs(yf)[4*bandwidth:5*bandwidth]*gain5
-        band6=np.abs(yf)[5*bandwidth:6*bandwidth]*gain6
-        band7=np.abs(yf)[6*bandwidth:7*bandwidth]*gain7
-        band8=np.abs(yf)[7*bandwidth:8*bandwidth]*gain8
-        band9=np.abs(yf)[8*bandwidth:9*bandwidth]*gain9
-        band10=np.abs(yf)[9*bandwidth:10*bandwidth]*gain10
+        bandwidth=bandwidth1[0][0]
+        band1=yf[0:bandwidth]*gain1
+        band2=yf[bandwidth:2*bandwidth]*gain2
+        band3=yf[2*bandwidth:3*bandwidth]*gain3
+        band4=yf[3*bandwidth:4*bandwidth]*gain4
+        band5=yf[4*bandwidth:5*bandwidth]*gain5
+        band6=yf[5*bandwidth:6*bandwidth]*gain6
+        band7=yf[6*bandwidth:7*bandwidth]*gain7
+        band8=yf[7*bandwidth:8*bandwidth]*gain8
+        band9=yf[8*bandwidth:9*bandwidth]*gain9
+        band10=yf[9*bandwidth:10*bandwidth]*gain10
         global new_yfft
         new_yfft=np.concatenate([band1,band2,band3,band4,band5,band6,band7,band8,band9,band10])
         print("len of new_yfft 1 = ", len(new_yfft))
         new_yfft[len(new_yfft): len(yf)] = 0
         print("len of new_yfft 2 = ", len(new_yfft))
-        # self.plotting(new_yfft)
-        self.plotting()
-        self.spectro(new_yfft)
+        self.plotting(new_yfft)
         
         # ============================================================================
     # def plot(self,signal, sample_rate):
-    def plotting(self):
+    def plotting(self,new_yfft):
         # s = irfft(yf)
         global adjusted_file
         adjusted_file = irfft(new_yfft)
         self.graphWidget2.plotItem.clear()
-        # self.graphWidget2.plot(s[0:len(s)],pen = "r")
-        self.graphWidget2.plot(adjusted_file[0:len(adjusted_file)],pen="r")
+        self.graphWidget2.plot(adjusted_file[0:len(adjusted_file)],pen = "r")
+        # self.graphWidget2.plot(adjusted_file[0:len(adjusted_file)],pen="r")
         self.graphWidget2.plotItem.getViewBox().setLimits(xMin=0,xMax=l)
         # pass
     
-    def spectro(self, draw):
-        pg.setConfigOptions(imageAxisOrder='row-major')
-        # the function that plot spectrogram of the selected signal
-        f, t, Sxx = signal.spectrogram(draw,10)
+    def colorPallete(self):
+        index0=self.comboBox.findText("Palette 1",QtCore.Qt.MatchFixedString)
+        index1=self.comboBox.findText("Palette 2",QtCore.Qt.MatchFixedString)
+        # self.comboBox.setCurrentIndex(0)
+        # global colorMap
+        if self.comboBox.currentText()=='Palette 1':
+            # hist.gradient.restoreState( {'mode': 'rgb','ticks': [(0.5, (0, 182, 188, 255)),(1.0, (246, 111, 0, 255)),(0.0, (75, 0, 113, 255))]})
+            
+            self.spectro('viridis')
+        elif self.comboBox.currentText()=='Palette 2':
+            self.spectro('plasma')
+        elif self.comboBox.currentText()=='Palette 3':
+            self.spectro('cool')
+        elif self.comboBox.currentText()=='Palette 4':
+            self.spectro('rainbow')
+        else:
+            self.spectro('GnBu')
 
-        # Item for displaying image audio2
-        img = pg.ImageItem()
-        self.spectWidget.addItem(img)
-        # Add a histogram with which to control the gradient of the image
-        hist = pg.HistogramLUTItem()
-        # Link the histogram to the image
-        hist.setImageItem(img)
-        # Fit the min and max levels of the histogram to the audio2 available
-        hist.setLevels(np.min(Sxx), np.max(Sxx))
-        # This gradient is roughly comparable to the gradient used by Matplotlib
-        # You can adjust it and then save it using hist.gradient.saveState()
-        hist.gradient.restoreState(
-        {'mode': 'rgb','ticks': [(0.5, (0, 182, 188, 255)),(1.0, (246, 111, 0, 255)),(0.0, (75, 0, 113, 255))]})
+           
 
-        # Sxx contains the amplitude for each pixel
-        img.setImage(Sxx)
-        # Scale the X and Y Axis to time and frequency (standard is pixels)
-        img.scale(t[-1]/np.size(Sxx, axis=1),f[-1]/np.size(Sxx, axis=0))
-        # Limit panning/zooming
-        self.spectWidget.setLimits(xMin=t[0], xMax=t[-1], yMin=f[0], yMax=f[-1])
+    # def spectro(self):
+    def spectro(self,colorMap):
+
+        fig = plt.figure()
+        plt.subplot(111)
+        # global colorMap
+        # self.colorPallete()
+        self.powerSpectrum, self.freqenciesFound, self.time, self.imageAxis = plt.specgram(audio2, Fs=sampling_rate, cmap=colorMap)
+        # plt.xlabel('Time')
+        # plt.ylabel('Frequency')
+        fig.savefig('plot.png')
+        self.upload()
+            
+    def upload(self):
+        self.label_21.setPixmap(QtGui.QPixmap("plot.png"))
+        self.label_21.setScaledContents(True)
 
 class MainApp2(QMainWindow,MAIN_WINDOW2):
     def __init__(self,parent=None):
@@ -253,15 +238,19 @@ class MainApp2(QMainWindow,MAIN_WINDOW2):
         xf = rfftfreq(n,T) # sample freq
         # print ( len (xf))
         # print (len(np.abs(yf)))
+        
         self.fourWidget.plot(xf,np.abs(yf),pen = "b")
-        # print(len(new_yfft))
+        print(len(new_yfft))
         print("len of yf",len(yf))
         print("len of xf",len(xf))
-        # self.fourWidget2.plot(xf,np.abs(new_yfft)[0 : len(xf)], pen='r')
-        self.fourWidget2.plot(xf[ 0 : len(new_yfft)],np.abs(new_yfft), pen='r')
+        self.fourWidget2.plot(xf[1:],np.abs(new_yfft)[ : len(xf)], pen='r')
+        # self.fourWidget2.plot(xf[ 0 : len(new_yfft)],np.abs(new_yfft), pen='r')
         # self.fourWidget2.plot(xf,np.abs(new_yfft), pen='r')
         # self.fourWidget2.plot(xf[ 0 : len(new_yfft)],np.abs(new_yfft), pen='r')
         # self.fourWidget2.plot(xf[1:],np.abs(new_yfft), pen='r')
+        """ plt.xlable("Frequency -->")
+        plt.ylable("Magnitude") """
+        
         
 def main():
     app = QApplication(sys.argv)
