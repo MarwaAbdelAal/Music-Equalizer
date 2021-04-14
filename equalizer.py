@@ -165,6 +165,7 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         global bandwidth
         bandwidth1=np.where(xf==((sampling_rate)/20))
         bandwidth=bandwidth1[0][0]
+        print("type of bandwidth",type(bandwidth))
         band1=yf[0:bandwidth]*gain1
         band2=yf[bandwidth:2*bandwidth]*gain2
         band3=yf[2*bandwidth:3*bandwidth]*gain3
@@ -220,41 +221,54 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         self.spectroWidget.setPixmap(QtGui.QPixmap("plot.png"))
         self.spectroWidget.setScaledContents(True)
 
-    def printPDF(self):
+    def generatePDF(self, filename):
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font('Arial', 'B', 15)
         pdf.set_xy(0,0)
-        
-        pdf.cell(0, 10,ln=1,align='C')
-        exporter = pg.exporters.ImageExporter(self.graphWidgets[0].plotItem)               
-        exporter.parameters()['width'] = 250  
-        exporter.parameters()['height'] = 250         
-        exporter.export('fileName1.png')
-        pdf.image('fileName1.png',x=None,y=None, w=180,h=70)
-
-        pdf.cell(0, 10,ln=1,align='C')
-        exporter = pg.exporters.ImageExporter(self.graphWidgets[1].plotItem)               
-        exporter.parameters()['width'] = 250  
-        exporter.parameters()['height'] = 250         
-        exporter.export('fileName2.png')
-        pdf.image('fileName2.png',x=None,y=None, w=180,h=70)
+        for i in range(2):
+            pdf.cell(0, 10,ln=1,align='C')
+            exporter = pg.exporters.ImageExporter(self.graphWidgets[i].plotItem)               
+            exporter.parameters()['width'] = 250  
+            exporter.parameters()['height'] = 250         
+            exporter.export('fileName'+str(i+1)+'.png')
+            pdf.image(('fileName'+str(i+1)+'.png'),x=None,y=None, w=180,h=70)
 
         pdf.cell(0, 10,ln=1,align='C')
         pdf.image('plot.png',x=None,y=None, w=200,h=100)
 
-        pdf.output('Report.pdf')
+        pdf.output(filename)
 
-    def saveFile(self):
+    def printPDF(self):
+        # allows the user to save the file and name it as they like
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self, "Export PDF", None, "PDF files (.pdf);;All Files()"
+        )
+        if filename:
+            if QtCore.QFileInfo(filename).suffix() == "":
+                filename += ".pdf"
+            self.generatePDF(filename)
+
+    def generate_WavFile(self, filename):
         maximum = np.max(np.abs(adjusted_file))
         print(type(maximum))
         print('adjusted_file',type(adjusted_file))
         data = (adjusted_file / maximum).astype(np.float32)
-        name="audiofile_output.wav"
+        name=filename
         # name=name.format(self.flag)
         save = wavfile.write(name, int(sampling_rate), data)
         plt.subplot(211)
         plot(adjusted_file)
+
+    def saveFile(self):
+        # allows the user to save the file and name it as they like
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self, "Export WAV", None, "WAV files (.wav);;All Files()"
+        )
+        if filename:
+            if QtCore.QFileInfo(filename).suffix() == "":
+                filename += ".wav"
+            self.generate_WavFile(filename)
 
 class MainApp2(QMainWindow,MAIN_WINDOW2):
     def __init__(self,parent=None):
