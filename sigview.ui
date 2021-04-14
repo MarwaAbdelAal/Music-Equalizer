@@ -432,7 +432,7 @@
      <x>0</x>
      <y>0</y>
      <width>950</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -504,7 +504,10 @@
   </action>
   <action name="actionSave_signal_as">
    <property name="text">
-    <string>Save signal as </string>
+    <string>Save signal</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionExit">
@@ -650,7 +653,7 @@
     <string>PDF</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+S</string>
+    <string>Ctrl+P</string>
    </property>
   </action>
   <action name="ClearSignal">

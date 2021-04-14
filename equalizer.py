@@ -25,6 +25,8 @@ import sounddevice as sd
 import math
 from matplotlib import cm
 from matplotlib.colors import ListedColormap,LinearSegmentedColormap
+from fpdf import FPDF
+import pyqtgraph.exporters
 
 MAIN_WINDOW,_=loadUiType(path.join(path.dirname(__file__),"sigview.ui"))
 MAIN_WINDOW2,_=loadUiType(path.join(path.dirname(__file__),"fft2.ui"))
@@ -61,6 +63,7 @@ class MainApp(QMainWindow,MAIN_WINDOW):
     def Menubar(self):
         self.actionOpen_signal.triggered.connect(self.BrowseSignal)
         self.actionSave_signal_as.triggered.connect(self.saveFile)
+        self.actionExit.triggered.connect(self.close)
        
     def Toolbar(self):
         self.PlayBtn.triggered.connect(self.play_audio)
@@ -70,7 +73,8 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         self.RightScroll.triggered.connect(self.ScrollRight)
         self.ZoomIn.triggered.connect(self.zoomIn) 
         self.ZoomOut.triggered.connect(self.zoomOut)
-        self.spectrogram.triggered.connect(self.spectro) 
+        self.spectrogram.triggered.connect(self.spectro)
+        self.PDF.triggered.connect(self.printPDF) 
 
     def BrowseSignal(self):
         global fileName
@@ -203,8 +207,6 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         else:
             self.spectro('GnBu')
 
-           
-
     # def spectro(self):
     def spectro(self,colorMap):
 
@@ -221,6 +223,34 @@ class MainApp(QMainWindow,MAIN_WINDOW):
     def upload(self):
         self.label_21.setPixmap(QtGui.QPixmap("plot.png"))
         self.label_21.setScaledContents(True)
+
+    def close(self):
+        QCoreApplication.instance().quit()
+
+    def printPDF(self):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font('Arial', 'B', 15)
+        pdf.set_xy(0,0)
+        
+        pdf.cell(0, 10,ln=1,align='C')
+        exporter = pg.exporters.ImageExporter(self.graphWidget.plotItem)               
+        exporter.parameters()['width'] = 250  
+        exporter.parameters()['height'] = 250         
+        exporter.export('fileName1.png')
+        pdf.image('fileName1.png',x=None,y=None, w=180,h=70)
+
+        pdf.cell(0, 10,ln=1,align='C')
+        exporter = pg.exporters.ImageExporter(self.graphWidget2.plotItem)               
+        exporter.parameters()['width'] = 250  
+        exporter.parameters()['height'] = 250         
+        exporter.export('fileName2.png')
+        pdf.image('fileName2.png',x=None,y=None, w=180,h=70)
+
+        pdf.cell(0, 10,ln=1,align='C')
+        pdf.image('plot.png',x=None,y=None, w=200,h=100)
+
+        pdf.output('Report.pdf')
 
 class MainApp2(QMainWindow,MAIN_WINDOW2):
     def __init__(self,parent=None):
