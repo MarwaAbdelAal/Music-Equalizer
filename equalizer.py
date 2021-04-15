@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore, uic, QtGui, QtPrintSupport
+from PyQt5 import QtWidgets, QtCore, uic, QtGui
 from pyqtgraph import PlotWidget, plot
 from PyQt5.uic import loadUiType
 from PyQt5.QtWidgets import *   
@@ -7,24 +7,17 @@ from PyQt5.QtGui import *
 from scipy import signal
 from os import path
 import pyqtgraph as pg
-import queue as Q
-import pandas as pd
 import numpy as np
 import sys
 import os
 from scipy.io import wavfile
 from scipy import signal
-import wave
-from scipy.signal import firwin,freqz
 import simpleaudio as sa
 from scipy.fft import rfft, rfftfreq, fft, fftfreq, ifft, irfft
 from matplotlib import pyplot as plt
 import librosa
-from scipy.signal import butter, lfilter
 import sounddevice as sd
-import math
-from matplotlib import cm
-from matplotlib.colors import ListedColormap,LinearSegmentedColormap
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from fpdf import FPDF
 import pyqtgraph.exporters
 
@@ -38,7 +31,6 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         QMainWindow.__init__(self)
         self.setupUi(self)
         global gainArray
-        # self.Toolbar()
         global sliderArray
         sliderArray = []
         sliderArray=[self.verticalSlider,self.verticalSlider_2,self.verticalSlider_3,self.verticalSlider_4,self.verticalSlider_5,self.verticalSlider_6,self.verticalSlider_7,self.verticalSlider_8,self.verticalSlider_9,self.verticalSlider_10]
@@ -47,11 +39,11 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         # design graphWidgets
         for i in range(2):
             self.graphWidgets[i].plotItem.showGrid(True, True, alpha=0.8)
-            self.graphWidgets[0].plotItem.setTitle("Before Equalization")
-            self.graphWidgets[1].plotItem.setTitle("After Equalization")
             self.graphWidgets[i].setBackground('w')
+        self.graphWidgets[0].plotItem.setTitle("Before Equalization")
+        self.graphWidgets[1].plotItem.setTitle("After Equalization")
         
-          # Add line to graph plot
+        # Add line to graph plot
         self.vLine = pg.InfiniteLine(movable=True, angle=90, pen=[75, 82, 159, 200])
         self.graphWidgets[0].addItem(self.vLine)
         self.vLine.setPos(100)
@@ -68,17 +60,19 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         self.actionOpen_signal.triggered.connect(self.BrowseSignal)
         self.actionSave_signal_as.triggered.connect(self.saveFile)
         self.actionExit.triggered.connect(self.close)
+        self.Add_New_window.triggered.connect(self.addNewWindow)
 
     def Toolbar(self):
-        self.PlayBtn.triggered.connect(self.play_audio)
-        self.DrawSig.triggered.connect(self.speedTimer)
         self.OpenSignalBtn.triggered.connect(self.BrowseSignal)
+        self.Save_signal.triggered.connect(self.saveFile)
+        self.DrawSig.triggered.connect(self.speedTimer)
         self.AddPanel.triggered.connect(self.addNewWindow)
+        self.PlayBtn.triggered.connect(self.play_audio)
         self.Stop.triggered.connect(self.stop_audio)
-        self.LeftScroll.triggered.connect(self.ScrollLeft) 
-        self.RightScroll.triggered.connect(self.ScrollRight)
         self.ZoomIn.triggered.connect(self.zoomIn) 
         self.ZoomOut.triggered.connect(self.zoomOut) 
+        self.LeftScroll.triggered.connect(self.ScrollLeft) 
+        self.RightScroll.triggered.connect(self.ScrollRight)
         self.PDF.triggered.connect(self.printPDF) 
    
     def BrowseSignal(self):
@@ -86,14 +80,15 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(None,"QFileDialog.getOpenFileName()", "","WAV Files (*.wav)")
         global sampling_rate, audio2 
         audio2, sampling_rate = librosa.load(fileName, sr=None, duration=20.0)
-        global l
-        l=len(audio2)
+        global length
+        length = len(audio2)
         self.changeslidervalue()
-        self.plotAudio(audio2,l)
-        self.graphWidgets[0].plotItem.getViewBox().setLimits(xMin=0,xMax=l)
+        self.plotAudio(audio2, length)
+        self.graphWidgets[0].plotItem.getViewBox().setLimits(xMin=0,xMax=length)
     
     def stop_audio(self):
-        sd.stop()    
+        sd.stop()
+        self.timer.stop()
     
     def speedTimer(self):
         for i in range(2):
@@ -102,12 +97,12 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         self.timer.setInterval(20) #delay interval for dynamic signal
         self.timer.timeout.connect(self.DynamicSignal)
         # self.timer.timeout.connect(self.DynamicSignal2)
-         #connect timer to our dynamic signal
+        #connect timer to our dynamic signal
         self.timer.start()
 
     def DynamicSignal(self):
         for i in range(2):
-           self.graphWidgets[i].plotItem.getViewBox().translateBy(x=l/100, y=0)
+           self.graphWidgets[i].plotItem.getViewBox().translateBy(x=length/100, y=0)
 
     def plotAudio(self,file,length):
         self.graphWidgets[0].plot(file[0:length],pen="b")
@@ -150,18 +145,15 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         while i < 10:
             gainArray.append(sliderArray[i].value())
             i += 1
-        self.audioRun(*gainArray)
+        self.processAudio(audio2, sampling_rate, *gainArray)
         return gainArray
 
-    def audioRun(self,*gainArray):
-        Rs = self.processAudio(audio2, sampling_rate, *gainArray)
-
     def processAudio(self, audio2, sampling_rate, gain1, gain2, gain3, gain4, gain5, gain6, gain7, gain8, gain9, gain10):
-        n=l
+        window_length = length
         global yf
         yf = rfft(audio2)
-        T=1/sampling_rate
-        xf = rfftfreq(n,T)
+        sample_spacing = 1/sampling_rate
+        xf = rfftfreq(window_length, sample_spacing)
         global bandwidth
         bandwidth1=np.where(xf==((sampling_rate)/20))
         bandwidth=bandwidth1[0][0]
@@ -189,8 +181,7 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         adjusted_file = irfft(new_yfft)
         self.graphWidgets[1].plotItem.clear()
         self.graphWidgets[1].plot(adjusted_file,pen = "r")
-        self.graphWidgets[1].plotItem.getViewBox().setLimits(xMin=0,xMax=l)
-        # pass
+        self.graphWidgets[1].plotItem.getViewBox().setLimits(xMin=0,xMax=length)
     
     def colorPallete(self):
         if self.comboBox.currentText()=='Palette 1':           
@@ -251,12 +242,8 @@ class MainApp(QMainWindow,MAIN_WINDOW):
 
     def generate_WavFile(self, filename):
         maximum = np.max(np.abs(adjusted_file))
-        print(type(maximum))
-        print('adjusted_file',type(adjusted_file))
         data = (adjusted_file / maximum).astype(np.float32)
-        name=filename
-        # name=name.format(self.flag)
-        save = wavfile.write(name, int(sampling_rate), data)
+        save = wavfile.write(filename, int(sampling_rate), data)
         plt.subplot(211)
         plot(adjusted_file)
 
@@ -279,12 +266,11 @@ class MainApp2(QMainWindow,MAIN_WINDOW2):
         self.pushButton.clicked.connect(self.fftt)
         
     def fftt(self):
-        
-        n=l
-        T=1/sampling_rate  
+        window_length = length
+        sample_spacing = 1/sampling_rate  
         global yf
         yf = rfft(audio2)
-        xf = rfftfreq(n,T)
+        xf = rfftfreq(window_length, sample_spacing)
         
         self.fourWidget.plot(xf,np.abs(yf),pen = "b")
         print(len(new_yfft))
@@ -299,7 +285,6 @@ def main():
     window.show()
     window2.show()
     sys.exit(app.exec_())
-
 
 if __name__=='__main__':
     main()
