@@ -25,17 +25,18 @@ MAIN_WINDOW,_=loadUiType(path.join(path.dirname(__file__),"sigview.ui"))
 MAIN_WINDOW2,_=loadUiType(path.join(path.dirname(__file__),"fft2.ui"))
 
 class MainApp(QMainWindow,MAIN_WINDOW):
-    # Some Variables initialization
-    sliderArray = []
-    gainArray = []
-    fileName, sampling_rate, audioData, length = 0
-
+    
     def __init__(self,parent=None):
         super(MainApp,self).__init__(parent)
         QMainWindow.__init__(self)
         self.setupUi(self)
+        global gainArray
+        global sliderArray
+
         self.timer= QtCore.QTimer()
-        self.speed = 150        
+        self.speed = 150
+        
+        sliderArray = []
         sliderArray=[self.verticalSlider,self.verticalSlider_2,self.verticalSlider_3,self.verticalSlider_4,self.verticalSlider_5,self.verticalSlider_6,self.verticalSlider_7,self.verticalSlider_8,self.verticalSlider_9,self.verticalSlider_10]
         self.graphWidgets=[self.graphWidget,self.graphWidget2]
  
@@ -199,6 +200,7 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         self.timer.stop()
         for i in range(2):
            self.graphWidgets[i].plotItem.getViewBox().translateBy(x=(length/1000), y=0)
+
     
     def colorPallete(self):
         if self.comboBox.currentText()=='Palette 1':           
