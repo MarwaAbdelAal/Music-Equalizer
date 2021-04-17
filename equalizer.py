@@ -25,14 +25,17 @@ MAIN_WINDOW,_=loadUiType(path.join(path.dirname(__file__),"sigview.ui"))
 MAIN_WINDOW2,_=loadUiType(path.join(path.dirname(__file__),"fft2.ui"))
 
 class MainApp(QMainWindow,MAIN_WINDOW):
-    
+    # Some Variables initialization
+    sliderArray = []
+    gainArray = []
+    fileName, sampling_rate, audioData, length = 0
+
     def __init__(self,parent=None):
         super(MainApp,self).__init__(parent)
         QMainWindow.__init__(self)
         self.setupUi(self)
-        global gainArray
-        global sliderArray
-        sliderArray = []
+        self.timer= QtCore.QTimer()
+        self.speed = 150        
         sliderArray=[self.verticalSlider,self.verticalSlider_2,self.verticalSlider_3,self.verticalSlider_4,self.verticalSlider_5,self.verticalSlider_6,self.verticalSlider_7,self.verticalSlider_8,self.verticalSlider_9,self.verticalSlider_10]
         self.graphWidgets=[self.graphWidget,self.graphWidget2]
  
@@ -42,18 +45,13 @@ class MainApp(QMainWindow,MAIN_WINDOW):
             self.graphWidgets[i].setBackground('w')
         self.graphWidgets[0].plotItem.setTitle("Before Equalization")
         self.graphWidgets[1].plotItem.setTitle("After Equalization")
-        
-        # Add line to graph plot
-        self.vLine = pg.InfiniteLine(movable=True, angle=90, pen=[75, 82, 159, 200])
-        self.graphWidgets[0].addItem(self.vLine)
-        self.vLine.setPos(100)
 
         self.comboBox.currentIndexChanged.connect(self.colorPallete)
         self.checkBox.stateChanged.connect(self.showSpectro)
         self.Menubar()
         self.Toolbar()
         self.showSpectro()
-        self.loopslider()
+        self.ConnectSliders()
         self.newWindows = []  
         
     def Menubar(self):
@@ -64,8 +62,9 @@ class MainApp(QMainWindow,MAIN_WINDOW):
 
     def Toolbar(self):
         self.OpenSignalBtn.triggered.connect(self.BrowseSignal)
-        self.Save_signal.triggered.connect(self.saveFile)
-        self.DrawSig.triggered.connect(self.speedTimer)
+        self.DrawSig.triggered.connect(self.PlottingTimer)
+        self.actionSpeed_Up.triggered.connect(lambda: self.speed_up())
+        self.actionSpeed_down.triggered.connect(lambda: self.speed_down())
         self.AddPanel.triggered.connect(self.addNewWindow)
         self.PlayBtn.triggered.connect(self.play_audio)
         self.Stop.triggered.connect(self.stop_audio)
@@ -74,69 +73,55 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         self.LeftScroll.triggered.connect(self.ScrollLeft) 
         self.RightScroll.triggered.connect(self.ScrollRight)
         self.PDF.triggered.connect(self.printPDF) 
-   
+        self.Save_signal.triggered.connect(self.saveFile) 
+        self.ShowFftButton.triggered.connect(self.showFFT) 
+
     def BrowseSignal(self):
-        global fileName
+        global fileName, sampling_rate, audioData, length
+        self.graphWidgets[0].plotItem.clear()
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(None,"QFileDialog.getOpenFileName()", "","WAV Files (*.wav)")
-        global sampling_rate, audio2 
-        audio2, sampling_rate = librosa.load(fileName, sr=None, duration=20.0)
-        global length
-        length = len(audio2)
+        audioData, sampling_rate = librosa.load(fileName, sr=None, duration=20.0)
+        length = len(audioData)
         self.changeslidervalue()
-        self.plotAudio(audio2, length)
+        self.plotAudio(audioData, length)
         self.graphWidgets[0].plotItem.getViewBox().setLimits(xMin=0,xMax=length)
     
-    def stop_audio(self):
-        sd.stop()
-        self.timer.stop()
-    
-    def speedTimer(self):
-        for i in range(2):
-            self.graphWidgets[i].plotItem.getViewBox().scaleBy(x=0.1, y=1) #Increases the scale of X axis and Y axis
-        self.timer= QtCore.QTimer()
-        self.timer.setInterval(20) #delay interval for dynamic signal
-        self.timer.timeout.connect(self.DynamicSignal)
-        # self.timer.timeout.connect(self.DynamicSignal2)
-        #connect timer to our dynamic signal
-        self.timer.start()
-
-    def DynamicSignal(self):
-        for i in range(2):
-           self.graphWidgets[i].plotItem.getViewBox().translateBy(x=length/100, y=0)
-
     def plotAudio(self,file,length):
         self.graphWidgets[0].plot(file[0:length],pen="b")
 
-    def play_audio(self):
-        sd.play(adjusted_file, sampling_rate)
+    def PlottingTimer(self):
+        for i in range(2):
+            self.timer.stop()
+            self.timer = QtCore.QTimer()
+            self.timer.setInterval(self.speed)
+            print ('speed:', self.speed)
     
-    def addNewWindow(self):
-        window3=MainApp()
-        window3.show()
-        self.newWindows.append(window3)
-        
-    def zoomIn(self):
-        for i in range(2):
-           self.graphWidgets[i].plotItem.getViewBox().scaleBy(x=0.5, y=1) #Increases the scale of X axis and Y axis
+            self.timer.timeout.connect(self.PlottingTimer)
+            self.timer.start()
+            xrange, yrange = self.graphWidgets[i].viewRange()
+            scrollvalue = (xrange[1] - xrange[0])/50
+            print('xrange[1]= ', xrange[1], 'xrange[0]= ', xrange[0])
+            print('yrange[1]= ', yrange[1], 'yrange[0]= ', yrange[0])
+            print('scrollvalue= ', scrollvalue)
+            self.graphWidgets[i].setXRange(xrange[0]+scrollvalue, xrange[1]+scrollvalue, padding=0)
 
-    def zoomOut(self):
-        for i in range(2):
-           self.graphWidgets[i].plotItem.getViewBox().scaleBy(x=2, y=1) #Decreases scale of X axis and Y axis 
+    def speed_up(self):
+        if self.speed == 10:
+            self.speed = 0
+        elif self.speed > 0:
+            self.speed -= 20
+        self.PlottingTimer()     
 
-    def ScrollLeft(self):
-        for i in range(2):
-           self.graphWidgets[i].plotItem.getViewBox().translateBy(x=-1000, y=0)
+    def speed_down(self):
+        self.speed += 20
+        self.PlottingTimer()
 
-    def ScrollRight(self):
-        for i in range(2):
-           self.graphWidgets[i].plotItem.getViewBox().translateBy(x=1000, y=0)
+    def play_audio(self):
+        sd.play(adjusted_audio, sampling_rate)
 
-    def loopslider(self):
-        global i
-        i = 0
-        while i < 10:
-            sliderArray[i].valueChanged.connect(self.changeslidervalue)
-            i += 1
+    def stop_audio(self):
+        sd.stop()
+        self.timer.stop()
 
     def changeslidervalue(self):
         global i
@@ -145,19 +130,26 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         while i < 10:
             gainArray.append(sliderArray[i].value())
             i += 1
-        self.processAudio(audio2, sampling_rate, *gainArray)
+        self.processAudio(audioData, sampling_rate, *gainArray)
         return gainArray
 
-    def processAudio(self, audio2, sampling_rate, gain1, gain2, gain3, gain4, gain5, gain6, gain7, gain8, gain9, gain10):
+    def ConnectSliders(self):
+        global i
+        i = 0
+        while i < 10:
+            sliderArray[i].valueChanged.connect(self.changeslidervalue)
+            i += 1
+
+    def processAudio(self, audioData, sampling_rate, gain1, gain2, gain3, gain4, gain5, gain6, gain7, gain8, gain9, gain10):
         window_length = length
-        global yf
-        yf = rfft(audio2)
         sample_spacing = 1/sampling_rate
+        global yf
+        yf = rfft(audioData)
         xf = rfftfreq(window_length, sample_spacing)
         global bandwidth
+        # bandwidth=len(xf)/10
         bandwidth1=np.where(xf==((sampling_rate)/20))
         bandwidth=bandwidth1[0][0]
-        print("type of bandwidth",type(bandwidth))
         band1=yf[0:bandwidth]*gain1
         band2=yf[bandwidth:2*bandwidth]*gain2
         band3=yf[2*bandwidth:3*bandwidth]*gain3
@@ -171,46 +163,89 @@ class MainApp(QMainWindow,MAIN_WINDOW):
         global new_yfft
         new_yfft=np.concatenate([band1,band2,band3,band4,band5,band6,band7,band8,band9,band10])
         new_yfft[len(new_yfft): len(yf)] = 0
-        self.plotting(new_yfft)
+        self.PlotNewSignal(new_yfft)
         self.colorPallete()
         self.play_audio()
         # ============================================================================
 
-    def plotting(self,new_yfft):
-        global adjusted_file
-        adjusted_file = irfft(new_yfft)
+    def PlotNewSignal(self,new_yfft):
+        global adjusted_audio
+        adjusted_audio = irfft(new_yfft)
         self.graphWidgets[1].plotItem.clear()
-        self.graphWidgets[1].plot(adjusted_file,pen = "r")
+        self.graphWidgets[1].plot(adjusted_audio,pen = "r")
         self.graphWidgets[1].plotItem.getViewBox().setLimits(xMin=0,xMax=length)
+    
+    def addNewWindow(self):
+        window3=MainApp()
+        window3.show()
+        self.newWindows.append(window3)
+        
+    def zoomIn(self):
+        # self.timer.stop()
+        for i in range(2):
+           self.graphWidgets[i].plotItem.getViewBox().scaleBy(x=0.5, y=1) #Increases the scale of X axis and Y axis
+
+    def zoomOut(self):
+        # self.timer.stop()
+        for i in range(2):
+           self.graphWidgets[i].plotItem.getViewBox().scaleBy(x=2, y=1) #Decreases scale of X axis and Y axis 
+
+    def ScrollLeft(self):
+        self.timer.stop()
+        for i in range(2):
+           self.graphWidgets[i].plotItem.getViewBox().translateBy(x=-(length/1000), y=0)
+
+    def ScrollRight(self):
+        self.timer.stop()
+        for i in range(2):
+           self.graphWidgets[i].plotItem.getViewBox().translateBy(x=(length/1000), y=0)
     
     def colorPallete(self):
         if self.comboBox.currentText()=='Palette 1':           
             self.spectro('viridis')
+            self.spectroBefore('viridis')
         elif self.comboBox.currentText()=='Palette 2':
             self.spectro('plasma')
+            self.spectroBefore('plasma')
         elif self.comboBox.currentText()=='Palette 3':
             self.spectro('cool')
+            self.spectroBefore('cool')
         elif self.comboBox.currentText()=='Palette 4':
             self.spectro('rainbow')
+            self.spectroBefore('rainbow')
         else:
             self.spectro('GnBu')
-           
+            self.spectroBefore('GnBu')
+
+    def spectroBefore(self,colorMap):
+        fig = plt.figure()
+        plt.subplot(111)
+        self.spectrogram= plt.specgram(audioData, Fs=sampling_rate, cmap=colorMap)
+        plt.colorbar()
+        fig.savefig('plot1.png')
+        self.upload1()
+
+    def spectro(self,colorMap):
+        fig = plt.figure()
+        plt.subplot(111)
+        self.spectrogram= plt.specgram(adjusted_audio, Fs=sampling_rate, cmap=colorMap)
+        plt.colorbar()
+        fig.savefig('plot.png')
+        self.upload()
+    
+    def upload1(self):
+        self.spectroWidget2.setPixmap(QtGui.QPixmap("plot1.png"))
+        self.spectroWidget2.setScaledContents(True)
+
+    def upload(self):
+        self.spectroWidget.setPixmap(QtGui.QPixmap("plot.png"))
+        self.spectroWidget.setScaledContents(True)
+
     def showSpectro(self):
         if self.checkBox.isChecked()==True:
             self.verticalWidget.show()
         else:
             self.verticalWidget.hide()
-
-    def spectro(self,colorMap):
-        fig = plt.figure()
-        plt.subplot(111)
-        self.spectrogram= plt.specgram(adjusted_file, Fs=sampling_rate, cmap=colorMap)
-        fig.savefig('plot.png')
-        self.upload()
-            
-    def upload(self):
-        self.spectroWidget.setPixmap(QtGui.QPixmap("plot.png"))
-        self.spectroWidget.setScaledContents(True)
 
     def generatePDF(self, filename):
         pdf = FPDF()
@@ -224,6 +259,9 @@ class MainApp(QMainWindow,MAIN_WINDOW):
             exporter.parameters()['height'] = 250         
             exporter.export('fileName'+str(i+1)+'.png')
             pdf.image(('fileName'+str(i+1)+'.png'),x=None,y=None, w=180,h=70)
+
+        pdf.cell(0, 10,ln=1,align='C')
+        pdf.image('plot1.png',x=None,y=None, w=200,h=100)
 
         pdf.cell(0, 10,ln=1,align='C')
         pdf.image('plot.png',x=None,y=None, w=200,h=100)
@@ -241,11 +279,11 @@ class MainApp(QMainWindow,MAIN_WINDOW):
             self.generatePDF(filename)
 
     def generate_WavFile(self, filename):
-        maximum = np.max(np.abs(adjusted_file))
-        data = (adjusted_file / maximum).astype(np.float32)
+        maximum = np.max(np.abs(adjusted_audio))
+        data = (adjusted_audio / maximum).astype(np.float32)
         save = wavfile.write(filename, int(sampling_rate), data)
         plt.subplot(211)
-        plot(adjusted_file)
+        plot(adjusted_audio)
 
     def saveFile(self):
         # allows the user to save the file and name it as they like
@@ -256,6 +294,8 @@ class MainApp(QMainWindow,MAIN_WINDOW):
             if QtCore.QFileInfo(filename).suffix() == "":
                 filename += ".wav"
             self.generate_WavFile(filename)
+    def showFFT(self):
+        window2.show()
 
 class MainApp2(QMainWindow,MAIN_WINDOW2):
     def __init__(self,parent=None):
@@ -269,7 +309,7 @@ class MainApp2(QMainWindow,MAIN_WINDOW2):
         window_length = length
         sample_spacing = 1/sampling_rate  
         global yf
-        yf = rfft(audio2)
+        yf = rfft(audioData)
         xf = rfftfreq(window_length, sample_spacing)
         
         self.fourWidget.plot(xf,np.abs(yf),pen = "b")
@@ -281,9 +321,10 @@ class MainApp2(QMainWindow,MAIN_WINDOW2):
 def main():
     app = QApplication(sys.argv)
     window = MainApp()
+    global window2
     window2 = MainApp2()
     window.show()
-    window2.show()
+    # window2.show()
     sys.exit(app.exec_())
 
 if __name__=='__main__':
