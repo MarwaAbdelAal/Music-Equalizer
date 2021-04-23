@@ -47,67 +47,6 @@
       </item>
      </layout>
     </item>
-    <item row="1" column="1" rowspan="2">
-     <widget class="QWidget" name="verticalWidget" native="true">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>600</height>
-       </size>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item alignment="Qt::AlignHCenter">
-        <widget class="QLabel" name="spectroWidget2">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item alignment="Qt::AlignHCenter">
-        <widget class="QLabel" name="spectroWidget">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="comboBox">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <item>
-          <property name="text">
-           <string>Palette 1</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Palette 2</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Palette 3</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Palette 4</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Palette 5</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
     <item row="0" column="0">
      <widget class="QCheckBox" name="checkBox">
       <property name="text">
@@ -385,6 +324,110 @@
          <property name="tickPosition">
           <enum>QSlider::TicksAbove</enum>
          </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="1" rowspan="2">
+     <widget class="QWidget" name="verticalWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>600</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item alignment="Qt::AlignHCenter">
+        <widget class="QLabel" name="spectroWidget2">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter">
+        <widget class="QLabel" name="spectroWidget">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="min_value_slider">
+         <property name="minimum">
+          <number>-200</number>
+         </property>
+         <property name="maximum">
+          <number>0</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="min_freq">
+         <property name="text">
+          <string>min freq</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="max_value_slider">
+         <property name="minimum">
+          <number>-200</number>
+         </property>
+         <property name="maximum">
+          <number>0</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="max_freq">
+         <property name="text">
+          <string>max freq</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="editable">
+          <bool>false</bool>
+         </property>
+         <item>
+          <property name="text">
+           <string>Palette 1</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Palette 2</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Palette 3</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Palette 4</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Palette 5</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>
@@ -704,7 +747,7 @@
   <action name="ShowFftButton">
    <property name="icon">
     <iconset>
-     <normaloff>icons/FFT.png</normaloff>icons/FFT.png</iconset>
+     <normaloff>icons/fft.png</normaloff>icons/fft.png</iconset>
    </property>
    <property name="text">
     <string>Show FFT</string>
@@ -716,7 +759,7 @@
   <action name="actionSpeed_Up">
    <property name="icon">
     <iconset>
-     <normaloff>icons/forward.png</normaloff>icons/forward.png</iconset>
+     <normaloff>icons/next.png</normaloff>icons/next.png</iconset>
    </property>
    <property name="text">
     <string>Speed Up</string>
@@ -731,7 +774,7 @@
   <action name="actionSpeed_down">
    <property name="icon">
     <iconset>
-     <normaloff>icons/backward.png</normaloff>icons/backward.png</iconset>
+     <normaloff>icons/back.png</normaloff>icons/back.png</iconset>
    </property>
    <property name="text">
     <string>Speed down</string>
@@ -752,6 +795,22 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>checkBox</tabstop>
+  <tabstop>verticalSlider</tabstop>
+  <tabstop>verticalSlider_2</tabstop>
+  <tabstop>verticalSlider_3</tabstop>
+  <tabstop>verticalSlider_4</tabstop>
+  <tabstop>verticalSlider_5</tabstop>
+  <tabstop>verticalSlider_6</tabstop>
+  <tabstop>verticalSlider_7</tabstop>
+  <tabstop>verticalSlider_8</tabstop>
+  <tabstop>verticalSlider_9</tabstop>
+  <tabstop>verticalSlider_10</tabstop>
+  <tabstop>min_value_slider</tabstop>
+  <tabstop>max_value_slider</tabstop>
+  <tabstop>comboBox</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
